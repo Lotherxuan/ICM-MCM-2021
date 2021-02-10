@@ -1,0 +1,119 @@
+import pandas as pd
+import geopandas as gpd
+import matplotlib.pyplot as plt
+import numpy as np
+from shapely.geometry import Point
+from geopy.distance import distance,lonlat
+import math
+Australia=gpd.read_file("../data/gadm36_AUS_shp/gadm36_AUS_1.shp")
+Victoria=Australia[9:10]
+v_boundary_path="../data/output_data/v_boundary.geojson"
+#Victoria.to_file(v_boundary_path)
+fire_data=pd.read_csv("../data/output_data/output_fire_data/clustering_fire_data.csv")
+fire_data
+def coverage(drone_cors):
+    count=0
+    for i in range(len(fire_data)):
+        for j in range(len(drone_cors)):
+            dis=distance(lonlat(drone_cors[j,0],drone_cors[j,1]),lonlat(float(fire_data.loc[i,['longitude']]),float(fire_data.loc[i,['latitude']]))).km
+            if(dis<30):
+                count+=1
+                break
+    return float(count)/float(len(fire_data))
+drone_number=80
+rec_max_y=-33.65
+rec_min_y=-39.57
+rec_max_x=150.15
+rec_min_x=140.67
+drone_cors=np.random.random((drone_number,2))
+count=0
+drone_cors=[]
+drone_cors.append((149.471,-37.5552))
+drone_cors.append((148.932,-37.3556))
+drone_cors.append((148.673,-37.2159))
+drone_cors.append((149.072,-37.5951))
+drone_cors.append((148.613,-37.5351))
+drone_cors.append((148.333,-37.4155))
+drone_cors.append((148.074,-37.136))
+drone_cors.append((148.294,-36.9564))
+drone_cors.append((147.954,-37.7149))
+drone_cors.append((147.695,-37.2558))
+drone_cors.append((147.675,-36.2777))
+drone_cors.append((147.116,-36.7168))
+drone_cors.append((147.555,-37.655))
+drone_cors.append((147.236,-37.9944))
+drone_cors.append((146.856,-37.5353))
+drone_cors.append((146.617,-37.8946))
+drone_cors.append((146.317,-38.3737))
+drone_cors.append((147.216,-37.2358))
+drone_cors.append((149.471,-37.5552))
+drone_cors.append((146.118,-37.4953))
+drone_cors.append((145.579,-37.7349))
+drone_cors.append((143.472,-37.9345))
+drone_cors.append((143.443,-37.7349))
+drone_cors.append((143.084,-37.4953))
+drone_cors.append((142.485,-37.2159))
+drone_cors.append((141.566,-37.9744))
+drone_cors.append((142.305,-34.9802))
+drone_cors.append((141.846,-35.4592))
+drone_cors.append((141.027,-35.6589))
+
+while True:
+    if len(drone_cors)==drone_number:
+        break
+    lat=np.random.rand()*(rec_max_y-rec_min_y)+rec_min_y
+    lon=np.random.rand()*(rec_max_x-rec_min_x)+rec_min_x
+    point=Point(lon,lat)
+    append_to_cors=True
+    if not Victoria.geometry.contains(point).bool():
+        continue
+    near=False
+    for i in range(len(fire_data)):
+        # print(i)
+        dis=distance(lonlat(lon,lat),lonlat(float(fire_data.loc[i,['longitude']]),float(fire_data.loc[i,['latitude']]))).km
+        if(dis<30):
+            near=True
+            break
+    if near==False:
+        continue
+    near=True
+    for i in range(len(drone_cors)):
+        dis=distance(lonlat(lon,lat),lonlat(drone_cors[i][0],drone_cors[i][1])).km
+        if(dis<50):
+            near=False
+            break
+    if near==False:
+        continue
+    drone_cors.append((lon,lat))
+    print(len(drone_cors))
+while True:
+    if len(drone_cors)==drone_number:
+        break
+    lat=np.random.rand()*(rec_max_y-rec_min_y)+rec_min_y
+    lon=np.random.rand()*(rec_max_x-rec_min_x)+rec_min_x
+    point=Point(lon,lat)
+    append_to_cors=True
+    if not Victoria.geometry.contains(point).bool():
+        continue
+    near=False
+    for i in range(len(fire_data)):
+        # print(i)
+        dis=distance(lonlat(lon,lat),lonlat(float(fire_data.loc[i,['longitude']]),float(fire_data.loc[i,['latitude']]))).km
+        if(dis<30):
+            near=True
+            break
+    if near==False:
+        continue
+    near=True
+    for i in range(len(drone_cors)):
+        dis=distance(lonlat(lon,lat),lonlat(drone_cors[i][0],drone_cors[i][1])).km
+        if(dis<40):
+            near=False
+            break
+    if near==False:
+        continue
+    drone_cors.append((lon,lat))
+    print(len(drone_cors))
+len(drone_cors)
+temp=drone_cors.copy()
+drone_cors=np.array(drone_cors)
